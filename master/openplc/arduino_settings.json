@@ -1,14 +1,14 @@
 {
   "baud": "115200",
-  "board_type": "ESP8266 D1-mini [3.1.2]",
+  "board_type": "ESP32 [NOT INSTALLED]",
   "com_port": "/dev/ttyUSB0",
   "dns": "8.8.8.8",
   "gateway": "192.168.1.1",
   "ip": "192.168.1.195",
-  "last_modified": 1750345259.8244295,
-  "last_update": 1722444289.593134,
+  "last_modified": 1750351314.9204586,
+  "last_update": 1750351314.9199896,
   "mac": "0xDE, 0xAD, 0xBE, 0xEF, 0xDE, 0xAD",
-  "mb_serial": false,
+  "mb_serial": true,
   "mb_tcp": false,
   "pwd": "password",
   "serial_iface": "Serial",
@@ -16,5 +16,9 @@
   "ssid": "",
   "subnet": "255.255.255.0",
   "tcp_iface": "WiFi",
-  "txpin": "-1"
+  "txpin": "-1",
+  "user_ain": "34, 35, 36, 39",
+  "user_aout": "25, 26",
+  "user_din": "17, 18, 19, 21, 22, 23, 27, 32, 33",
+  "user_dout": "02, 04, 05, 12, 13, 14, 15, 16"
 }
