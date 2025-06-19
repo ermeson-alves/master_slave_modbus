@@ -1,0 +1,101 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6.xsd">
+  <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-06-19T11:35:34"/>
+  <contentHeader name="Unnamed" modificationDateTime="2025-06-19T13:18:48">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="10" y="10"/>
+      </fbd>
+      <ld>
+        <scaling x="10" y="10"/>
+      </ld>
+      <sfc>
+        <scaling x="10" y="10"/>
+      </sfc>
+    </coordinateInfo>
+  </contentHeader>
+  <types>
+    <dataTypes/>
+    <pous>
+      <pou name="RS485_Master" pouType="program">
+        <interface>
+          <inputVars>
+            <variable name="Start_Button">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="Motor_Enable">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+          </inputVars>
+        </interface>
+        <body>
+          <LD>
+            <contact localId="1" negated="false" width="21" height="20">
+              <position x="200" y="120"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="3">
+                  <position x="200" y="130"/>
+                  <position x="120" y="130"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>Start_Button</variable>
+            </contact>
+            <coil localId="2" negated="false" width="21" height="20">
+              <position x="360" y="110"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="1">
+                  <position x="360" y="120"/>
+                  <position x="290" y="120"/>
+                  <position x="290" y="130"/>
+                  <position x="221" y="130"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>Motor_Enable</variable>
+            </coil>
+            <leftPowerRail localId="3" width="10" height="40">
+              <position x="110" y="110"/>
+              <connectionPointOut formalParameter="">
+                <relPosition x="10" y="20"/>
+              </connectionPointOut>
+            </leftPowerRail>
+            <rightPowerRail localId="4" width="10" height="40">
+              <position x="480" y="20"/>
+              <connectionPointIn>
+                <relPosition x="0" y="20"/>
+                <connection refLocalId="2">
+                  <position x="480" y="40"/>
+                  <position x="430" y="40"/>
+                  <position x="430" y="120"/>
+                  <position x="381" y="120"/>
+                </connection>
+              </connectionPointIn>
+            </rightPowerRail>
+          </LD>
+        </body>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations>
+      <configuration name="Config0">
+        <resource name="Res0">
+          <task name="task0" priority="0" interval="T#20ms">
+            <pouInstance name="instance0" typeName="RS485_Master"/>
+          </task>
+        </resource>
+      </configuration>
+    </configurations>
+  </instances>
+</project>
