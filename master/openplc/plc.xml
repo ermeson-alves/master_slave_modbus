@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-06-19T11:35:34"/>
-  <contentHeader name="Unnamed" modificationDateTime="2025-06-19T15:33:53">
+  <contentHeader name="Unnamed" modificationDateTime="2025-06-28T13:28:26">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -35,12 +35,12 @@
         <body>
           <LD>
             <contact localId="1" negated="false" width="21" height="20">
-              <position x="200" y="120"/>
+              <position x="190" y="30"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
                 <connection refLocalId="3">
-                  <position x="200" y="130"/>
-                  <position x="120" y="130"/>
+                  <position x="190" y="40"/>
+                  <position x="50" y="40"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -49,14 +49,12 @@
               <variable>Start_Button</variable>
             </contact>
             <coil localId="2" negated="false" width="21" height="20">
-              <position x="360" y="110"/>
+              <position x="360" y="30"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
                 <connection refLocalId="1">
-                  <position x="360" y="120"/>
-                  <position x="290" y="120"/>
-                  <position x="290" y="130"/>
-                  <position x="221" y="130"/>
+                  <position x="360" y="40"/>
+                  <position x="211" y="40"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
@@ -64,21 +62,19 @@
               </connectionPointOut>
               <variable>Motor_Enable</variable>
             </coil>
-            <leftPowerRail localId="3" width="10" height="40">
-              <position x="110" y="110"/>
+            <leftPowerRail localId="3" width="10" height="350">
+              <position x="40" y="20"/>
               <connectionPointOut formalParameter="">
                 <relPosition x="10" y="20"/>
               </connectionPointOut>
             </leftPowerRail>
-            <rightPowerRail localId="4" width="10" height="40">
-              <position x="480" y="20"/>
+            <rightPowerRail localId="4" width="10" height="350">
+              <position x="670" y="20"/>
               <connectionPointIn>
                 <relPosition x="0" y="20"/>
                 <connection refLocalId="2">
-                  <position x="480" y="40"/>
-                  <position x="430" y="40"/>
-                  <position x="430" y="120"/>
-                  <position x="381" y="120"/>
+                  <position x="670" y="40"/>
+                  <position x="381" y="40"/>
                 </connection>
               </connectionPointIn>
             </rightPowerRail>
