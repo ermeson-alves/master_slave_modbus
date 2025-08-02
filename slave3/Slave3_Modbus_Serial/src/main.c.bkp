@@ -1,0 +1,114 @@
+#include <esp_modbus_common.h>
+#include <mbcontroller.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <driver/gpio.h>
+#include <esp_err.h>
+#include <esp_log.h>
+
+// Registradores do Escravo
+#define MB_REG_DISCRETE_INPUT_CNT       (9)     // %IX - 9 bits
+#define MB_REG_COILS_CNT                (10)    // %QX - 10 bits
+#define MB_REG_INPUT_CNT                (4)     // %IW - 4 words
+#define MB_REG_HOLD_CNT                 (2)     // %QW - 2 words
+
+// Define endereço inicial de cada registrador
+#define MB_REG_DISCRETE_INPUT_START     (0)
+#define MB_REG_COILS_START              (0)
+#define MB_REG_INPUT_START              (0)
+#define MB_REG_HOLD_START               (0)
+
+// Define configurações comunicação RTU
+#define MB_SLAVE_DEV_SPEED 19200    // Baud rate
+#define MB_SLAVE_ADDR 3             // Slave 3
+#define MB_SLAVE_PORT_NUM 2         // UART2
+
+#define MB_READ_MASK            (MB_EVENT_INPUT_REG_RD | MB_EVENT_HOLDING_REG_RD)
+#define MB_WRITE_MASK           (MB_EVENT_HOLDING_REG_WR)
+#define MB_READ_WRITE_MASK      (MB_READ_MASK | MB_WRITE_MASK)
+#define MB_PAR_INFO_GET_TOUT    (10 / portTICK_RATE_MS)
+
+// Define a tag for this file
+static const char *TAG = "MAIN";
+
+void app_main() {
+    // Inicializa a porta Modbus Escravo
+    void* slave_handler = NULL;
+    esp_err_t err = mbc_slave_init(MB_PORT_SERIAL_SLAVE, &slave_handler);
+    if (slave_handler == NULL || err != ESP_OK) {
+        ESP_LOGE(TAG, "mb controller initialization failed");
+    }
+
+    // Configura o acesso de dados do Escravo
+    mb_register_area_descriptor_t reg_area; // Descritor de areas de dados
+    // Arrays de area de dados dos registradores
+    uint8_t discrete_input_area[MB_REG_DISCRETE_INPUT_CNT] = {0};
+    uint8_t coil_area[MB_REG_COILS_CNT] = {0};
+    uint16_t input_reg_area[MB_REG_INPUT_CNT] = {0};
+    uint16_t holding_reg_area[MB_REG_HOLD_CNT] = {0};
+
+    // Configura a area de Discrete Input (%IX)
+    reg_area.type = MB_PARAM_DISCRETE;
+    reg_area.start_offset = MB_REG_DISCRETE_INPUT_START;
+    reg_area.address = (void*)&discrete_input_area[0];
+    reg_area.size = MB_REG_DISCRETE_INPUT_CNT;
+    //reg_area.size = sizeof(discrete_input_area) << 1;
+    ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
+
+    // Configura a area de Coil (%QX)
+    reg_area.type = MB_PARAM_COIL;
+    reg_area.start_offset = MB_REG_COILS_START;
+    reg_area.address = (void*)&coil_area[0];
+    reg_area.size = MB_REG_COILS_CNT;
+    //reg_area.size = sizeof(coil_area) << 1;
+    ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
+
+    // Configura a area de Input Registers (%IW)
+    reg_area.type = MB_PARAM_INPUT;
+    reg_area.start_offset = MB_REG_INPUT_START;
+    reg_area.address = (void*)&input_reg_area[0];
+    reg_area.size = MB_REG_INPUT_CNT;
+    //reg_area.size = sizeof(input_reg_area) << 1;
+    ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
+
+    // Configura a area de Holding Registers (%QW)
+    reg_area.type = MB_PARAM_HOLDING;
+    reg_area.start_offset = MB_REG_HOLD_START;
+    reg_area.address = (void*)&holding_reg_area[0];
+    reg_area.size = MB_REG_HOLD_CNT;
+    //reg_area.size = sizeof(holding_reg_area) << 1;
+    ESP_ERROR_CHECK(mbc_slave_set_descriptor(reg_area));
+
+    // Configura comunicação do Escravo
+    // Configura UART2 para comunicação RS485
+    ESP_ERROR_CHECK(uart_set_mode(UART_NUM_2, UART_MODE_RS485_HALF_DUPLEX));
+
+    // Parametriza comunicação e inicia a stack
+    mb_communication_info_t comm_info = {
+        .mode = MB_MODE_RTU,                   
+        .slave_addr = MB_SLAVE_ADDR,            // ID do Escravo
+        .port = MB_SLAVE_PORT_NUM,              // Porta UART
+        .baudrate = MB_SLAVE_DEV_SPEED,
+        .parity = MB_PARITY_NONE                
+    };
+
+    ESP_ERROR_CHECK(mbc_slave_setup((void*)&comm_info));
+
+    // Inicializa comunicação do escravo
+    ESP_ERROR_CHECK(mbc_slave_start());
+
+    // mb_param_info_t reg_info;
+
+    /* Enable Pullup for Input Pin */
+    //gpio_pullup_en(0);
+
+    while (1) {
+
+        // The function blocks while waiting for register access
+        (void)mbc_slave_check_event(MB_READ_WRITE_MASK);
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+
+    ESP_ERROR_CHECK(mbc_slave_destroy());
+
+}
