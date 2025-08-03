@@ -33,10 +33,10 @@ void LOGGER_body__(LOGGER *data__);
 // Data part
 typedef struct {
   // PROGRAM Interface - IN, OUT, IN_OUT variables
-  __DECLARE_VAR(BOOL,START_BUTTON)
-  __DECLARE_VAR(BOOL,MOTOR_ENABLE)
 
   // PROGRAM private variables - TEMP, private and located variables
+  __DECLARE_VAR(BOOL,PB3)
+  __DECLARE_VAR(BOOL,LED3)
 
 } RS485_MASTER;
 

@@ -94,8 +94,8 @@ typedef const struct {
 } dbgvardsc_t;
 
 static const dbgvardsc_t dbgvardsc[] = {
-{&(RES0__INSTANCE0.START_BUTTON), BOOL_ENUM},
-{&(RES0__INSTANCE0.MOTOR_ENABLE), BOOL_ENUM}
+{&(RES0__INSTANCE0.PB3), BOOL_ENUM},
+{&(RES0__INSTANCE0.LED3), BOOL_ENUM}
 };
 
 static const dbgvardsc_index_t retain_list[] = {

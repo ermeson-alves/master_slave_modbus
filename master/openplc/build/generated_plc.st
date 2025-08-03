@@ -1,10 +1,10 @@
 PROGRAM RS485_Master
-  VAR_INPUT
-    Start_Button : BOOL;
-    Motor_Enable : BOOL;
+  VAR
+    PB3 AT %IX102.2 : BOOL;
+    LED3 AT %QX102.4 : BOOL;
   END_VAR
 
-  Motor_Enable := Start_Button;
+  LED3 := PB3;
 END_PROGRAM
 
 

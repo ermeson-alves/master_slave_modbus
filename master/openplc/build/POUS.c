@@ -42,15 +42,15 @@ __end:
 
 
 void RS485_MASTER_init__(RS485_MASTER *data__, BOOL retain) {
-  __INIT_VAR(data__->START_BUTTON,__BOOL_LITERAL(FALSE),retain)
-  __INIT_VAR(data__->MOTOR_ENABLE,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->PB3,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->LED3,__BOOL_LITERAL(FALSE),retain)
 }
 
 // Code part
 void RS485_MASTER_body__(RS485_MASTER *data__) {
   // Initialise TEMP variables
 
-  __SET_VAR(data__->,MOTOR_ENABLE,,__GET_VAR(data__->START_BUTTON,));
+  __SET_VAR(data__->,LED3,,__GET_VAR(data__->PB3,));
 
   goto __end;
 

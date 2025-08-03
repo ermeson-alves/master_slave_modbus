@@ -22,12 +22,12 @@ END_FUNCTION_BLOCK
 
 
 PROGRAM RS485_Master
-  VAR_INPUT
-    Start_Button : BOOL;
-    Motor_Enable : BOOL;
+  VAR
+    PB3 : BOOL;
+    LED3 : BOOL;
   END_VAR
 
-  Motor_Enable := Start_Button;
+  LED3 := PB3;
 END_PROGRAM
 
 
