@@ -37,6 +37,10 @@ typedef struct {
   // PROGRAM private variables - TEMP, private and located variables
   __DECLARE_VAR(BOOL,PB3)
   __DECLARE_VAR(BOOL,LED3)
+  __DECLARE_VAR(BOOL,PB2)
+  __DECLARE_VAR(BOOL,LED2)
+  __DECLARE_VAR(BOOL,PB1)
+  __DECLARE_VAR(BOOL,LED1)
 
 } RS485_MASTER;
 

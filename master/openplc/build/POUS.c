@@ -44,6 +44,10 @@ __end:
 void RS485_MASTER_init__(RS485_MASTER *data__, BOOL retain) {
   __INIT_VAR(data__->PB3,__BOOL_LITERAL(FALSE),retain)
   __INIT_VAR(data__->LED3,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->PB2,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->LED2,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->PB1,__BOOL_LITERAL(FALSE),retain)
+  __INIT_VAR(data__->LED1,__BOOL_LITERAL(FALSE),retain)
 }
 
 // Code part
@@ -51,6 +55,8 @@ void RS485_MASTER_body__(RS485_MASTER *data__) {
   // Initialise TEMP variables
 
   __SET_VAR(data__->,LED3,,__GET_VAR(data__->PB3,));
+  __SET_VAR(data__->,LED2,,__GET_VAR(data__->PB2,));
+  __SET_VAR(data__->,LED1,,__GET_VAR(data__->PB1,));
 
   goto __end;
 

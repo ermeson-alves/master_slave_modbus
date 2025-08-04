@@ -25,9 +25,15 @@ PROGRAM RS485_Master
   VAR
     PB3 : BOOL;
     LED3 : BOOL;
+    PB2 : BOOL;
+    LED2 : BOOL;
+    PB1 : BOOL;
+    LED1 : BOOL;
   END_VAR
 
   LED3 := PB3;
+  LED2 := PB2;
+  LED1 := PB1;
 END_PROGRAM
 
 

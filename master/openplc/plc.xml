@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-06-19T11:35:34"/>
-  <contentHeader name="Unnamed" modificationDateTime="2025-08-03T17:08:18">
+  <contentHeader name="Unnamed" modificationDateTime="2025-08-03T22:40:14">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -26,6 +26,26 @@
               </type>
             </variable>
             <variable name="LED3" address="%QX102.4">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="PB2" address="%IX101.1">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="LED2" address="%QX101.2">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="PB1" address="%IX100.0">
+              <type>
+                <BOOL/>
+              </type>
+            </variable>
+            <variable name="LED1" address="%QX100.0">
               <type>
                 <BOOL/>
               </type>
@@ -193,14 +213,22 @@
                 <relPosition x="0" y="20"/>
                 <connection refLocalId="5">
                   <position x="670" y="40"/>
-                  <position x="590" y="40"/>
+                  <position x="591" y="40"/>
                 </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="0" y="60"/>
+                <connection refLocalId="8">
+                  <position x="670" y="80"/>
+                  <position x="590" y="80"/>
+                </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="0" y="100"/>
+                <connection refLocalId="10">
+                  <position x="670" y="120"/>
+                  <position x="590" y="120"/>
+                </connection>
               </connectionPointIn>
               <connectionPointIn>
                 <relPosition x="0" y="140"/>
@@ -372,6 +400,62 @@
               </connectionPointOut>
               <variable>PB3</variable>
             </contact>
+            <contact localId="7" negated="false" width="21" height="20">
+              <position x="200" y="70"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="3">
+                  <position x="200" y="80"/>
+                  <position x="50" y="80"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>PB2</variable>
+            </contact>
+            <coil localId="8" negated="false" width="21" height="20">
+              <position x="570" y="70"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="7">
+                  <position x="570" y="80"/>
+                  <position x="221" y="80"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>LED2</variable>
+            </coil>
+            <contact localId="9" negated="false" width="21" height="20">
+              <position x="200" y="110"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="3">
+                  <position x="200" y="120"/>
+                  <position x="50" y="120"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="21" y="10"/>
+              </connectionPointOut>
+              <variable>PB1</variable>
+            </contact>
+            <coil localId="10" negated="false" width="20" height="20">
+              <position x="570" y="110"/>
+              <connectionPointIn>
+                <relPosition x="0" y="10"/>
+                <connection refLocalId="9">
+                  <position x="570" y="120"/>
+                  <position x="221" y="120"/>
+                </connection>
+              </connectionPointIn>
+              <connectionPointOut>
+                <relPosition x="20" y="10"/>
+              </connectionPointOut>
+              <variable>LED1</variable>
+            </coil>
           </LD>
         </body>
       </pou>

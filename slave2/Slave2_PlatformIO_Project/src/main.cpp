@@ -9,7 +9,7 @@
 
 // --- SETTINGS FROM YOUR CONFIGURATION ---
 #define SLAVE_ID 2
-#define BAUD_RATE 19200
+#define BAUD_RATE 9600
 
 // Using Serial2 (RX=16, TX=17) for an adapter with automatic direction control
 HardwareSerial& modbusSerial = Serial2; 
@@ -31,7 +31,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   // Start the Modbus serial port
-  modbusSerial.begin(BAUD_RATE, SERIAL_8N1);
+  modbusSerial.begin(BAUD_RATE, SERIAL_8E1);
   Serial.println("1. Modbus serial port started at 19200 baud.");
 
   // Configure the Modbus slave
