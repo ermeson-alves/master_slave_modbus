@@ -81,63 +81,27 @@ void setup() {
 void loop() {
   // Let the slave listen for master requests
   slave.task();
+  // 1. Leitura do comando do mestre para ligar o motor
+  bool motorLigado = slave.Coil(0);  // %QX0.0
 
-  // 1. Coils: Make the ESP32's built-in LED follow the state of Coil 0.
-  // You can control this by forcing a value to %QX100.0 in OpenPLC.
-  bool coil0_status = slave.Coil(0);
-  digitalWrite(LED_BUILTIN, coil0_status);
-
-  // --- Novos Coils e registradores ---
-  bool motorLigado = slave.Coil(2); // %QX0.2 → Liga motor
-  bool resetFalha = slave.Coil(1);  // %QX0.1 → Resetar falha
-
-  // Estados internos
-  static bool falhaDetectada = false;
-  static unsigned long tempoUltimaAtualizacao = millis();
-  static unsigned long tempoOperacao = 0; // segundos
-
-  // Corrente simulada apenas se motor estiver ligado
+  // 2. Simulação da corrente do motor (oscila entre 5 e 15A)
   float corrente = motorLigado ? (10 + 5 * sin(millis() / 1000.0)) : 0;
-  slave.Ireg(0, (uint16_t)(corrente * 10)); // Corrente x10 (%IW0)
+  slave.Ireg(0, (uint16_t)(corrente * 10));  // %IW0 = corrente x10
 
-  // Temperatura simulada (aumenta com tempo se motor ligado)
-  float temperatura = motorLigado ? (25 + 0.05 * (millis() / 1000.0)) : 25;
-  slave.Ireg(1, (uint16_t)(temperatura * 10)); // Temperatura x10 (%IW1)
+  // 3. Leitura do limite de corrente definido pelo mestre
+  uint16_t limite = slave.Hreg(0);  // %QW0 = limite x10
 
-  // Limite de corrente (pelo mestre)
-  uint16_t limite = slave.Hreg(0);
-
-  // Detecção de falha
-  if (!falhaDetectada && (uint16_t)(corrente * 10) > limite) {
-    falhaDetectada = true;
-    motorLigado = false; // Trava o motor
-    slave.Coil(2, false); // Desliga via lógica
-    slave.Ists(1, true);  // Sinaliza falha (%IX1)
-    Serial.println(">>> FALHA: Sobrecorrente detectada! <<<");
-  }
-
-  // Reset da falha
-  if (resetFalha && falhaDetectada) {
-    falhaDetectada = false;
-    slave.Ists(1, false); // Limpa falha
-    Serial.println(">>> FALHA RESETADA <<<");
-  }
-
-  // Tempo de operação
-  unsigned long agora = millis();
-  if (motorLigado && !falhaDetectada && agora - tempoUltimaAtualizacao >= 1000) {
-    tempoOperacao++;
-    slave.Hreg(1, tempoOperacao); // %QW1
-    tempoUltimaAtualizacao = agora;
-  }
-
-  // LED feedback
-  if (falhaDetectada) {
-    digitalWrite(LED_BUILTIN, millis() % 500 < 250); // Pisca rápido
+  // 4. LED como alarme visual
+  if ((uint16_t)(corrente * 10) > limite && motorLigado) {
+    // Alarme de sobrecorrente → pisca rápido
+    digitalWrite(LED_BUILTIN, millis() % 400 < 200);
+    Serial.println(">>> ALARME: Corrente excedeu o limite!");
   } else if (motorLigado) {
-    digitalWrite(LED_BUILTIN, HIGH); // LED ligado fixo
+    // Motor ligado normalmente → LED ligado
+    digitalWrite(LED_BUILTIN, HIGH);
   } else {
-    digitalWrite(LED_BUILTIN, LOW); // LED desligado
+    // Motor desligado → LED apagado
+    digitalWrite(LED_BUILTIN, LOW);
   }
 
 }
