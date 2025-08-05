@@ -22,6 +22,13 @@ ModbusRTU slave;
 #define IREG_COUNT 4
 #define HREG_COUNT 2
 
+//------------------------------------------------------------------------------------------------
+// Controle interno de tempo para simulação
+unsigned long lastFimCursoToggle = 0;
+unsigned long lastVibracaoToggle = 0;
+bool fimCursoEstado = false;
+bool vibracaoEstado = false;
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -75,25 +82,62 @@ void loop() {
   // Let the slave listen for master requests
   slave.task();
 
-  // --- EXAMPLE LOGIC ---
-
   // 1. Coils: Make the ESP32's built-in LED follow the state of Coil 0.
   // You can control this by forcing a value to %QX100.0 in OpenPLC.
   bool coil0_status = slave.Coil(0);
   digitalWrite(LED_BUILTIN, coil0_status);
 
-  // 2. Discrete Inputs: Set the status of Discrete Input 0.
-  // You can monitor this in OpenPLC at %IX100.0.
-  // Here we just make it toggle every 2 seconds.
-  bool discrete0_status = (millis() / 2000) % 2;
-  slave.Ists(0, discrete0_status);
+  // // 2. Discrete Inputs: Set the status of Discrete Input 0.
+  // // You can monitor this in OpenPLC at %IX100.0.
+  // // Here we just make it toggle every 2 seconds.
+  // bool discrete0_status = (millis() / 2000) % 2;
+  // slave.Ists(0, discrete0_status);
 
-  // 3. Input Registers: Write a simulated sensor value.
-  // Monitor this in OpenPLC at %IW108.
-  uint16_t sensor_value = 1000 + 500 * sin(millis() / 1000.0);
-  slave.Ireg(0, sensor_value);
+  // // 3. Input Registers: Write a simulated sensor value.
+  // // Monitor this in OpenPLC at %IW108.
+  // uint16_t sensor_value = 1000 + 500 * sin(millis() / 1000.0);
+  // slave.Ireg(0, sensor_value);
 
-  // 4. Holding Registers: You can read the value OpenPLC writes here.
-  // OpenPLC writes to this register via %QW104.
-  uint16_t value_from_master = slave.Hreg(0);
+  // // 4. Holding Registers: You can read the value OpenPLC writes here.
+  // // OpenPLC writes to this register via %QW104.
+  // uint16_t value_from_master = slave.Hreg(0);
+
+
+  unsigned long now = millis();
+
+  // --- 1. Simular FIM DE CURSO alternando a cada 3s ---
+  if (now - lastFimCursoToggle > 3000) {
+    fimCursoEstado = !fimCursoEstado;
+    slave.Ists(0, fimCursoEstado); // Atualiza %IX0.0
+    lastFimCursoToggle = now;
+  }
+
+  // --- 2. Simular CORRENTE do motor com senoide ---
+  float corrente = 10 + 5 * sin(now / 1000.0); // Oscila entre 5A e 15A
+  slave.Ireg(0, (uint16_t)(corrente * 10));   // %IW0 → corrente x10
+
+  // --- 3. Verificar se corrente ultrapassa limite definido pelo mestre ---
+  uint16_t limite = slave.Hreg(0); // Ex: 150 = 15.0A
+  if ((uint16_t)(corrente * 10) > limite) {
+    digitalWrite(LED_BUILTIN, HIGH); // Alarme de sobrecorrente
+  } else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+
+  // --- 4. Simular VIBRAÇÃO ativa por 1s a cada 7s ---
+  if ((now - lastVibracaoToggle) > 7000) {
+    vibracaoEstado = true;
+    lastVibracaoToggle = now;
+  }
+  if (vibracaoEstado && (now - lastVibracaoToggle > 1000)) {
+    vibracaoEstado = false;
+  }
+
+  // --- 5. Lógica de ALARME ativado pelo mestre (coil 0) ---
+  bool alarmeAtivado = slave.Coil(0); // %QX0.0
+  if (alarmeAtivado && vibracaoEstado) {
+    Serial.println(">>> Vibração detectada com alarme armado <<<");
+    // Aqui você pode adicionar um relé ou buzzer se quiser
+  }
+
 }
