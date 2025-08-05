@@ -30,21 +30,51 @@ ModbusRTU slave;
 
 const int lightSensorPin = 35;
 const int soundSensorPin = 34;
-const int audioThreshold = 3000;
 const int mutePin = 18;
+
+// ============== Threshold Definitions (CALIBRATE THESE!) ==============
+// For LDR: Higher value = brighter light needed to trigger.
+// For Sound: Higher value = louder sound needed to trigger.
+const int lightThreshold = 1500;
+const int soundThreshold = 3000;
 
 // ============== Global Audio Objects ==============
 AudioGeneratorWAV *wav;
 AudioFileSourceSPIFFS *file;
 AudioOutputI2S *out;
 
-// ============== State Machine Flag ==============
-bool hasPlayed = false;
+// ============== State Machine Flags ==============
+bool hasLightAlertPlayed = false;
+bool hasSoundAlertPlayed = false;
+
+// Helper function to start playing a WAV file
+void playAudioFile(const char *filename) {
+  Serial.printf("Attempting to play: %s\n", filename);
+  file->open(filename);
+  wav = new AudioGeneratorWAV();
+  wav->begin(file, out);
+}
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("ESP32 Modbus Slave - All Registers Enabled");
+
+  // --- Mute Pin Control ---
+  pinMode(mutePin, OUTPUT);
+  digitalWrite(mutePin, LOW); // Unmute the amplifier to make it ready
+  Serial.println("Amplifier Unmuted (MUTE on GPIO18 is HIGH).");
+  // ------------------------
+
+  if (!SPIFFS.begin(true)) {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+
+  // This initializes the internal DAC on GPIO25 (and/or GPIO26 if in stereo)
+  out = new AudioOutputI2S(0, AudioOutputI2S::INTERNAL_DAC);
+  out->SetRate(16000);
+  file = new AudioFileSourceSPIFFS();
 
   // For ESP32, define the built-in LED pin
   pinMode(LED_BUILTIN, OUTPUT);
@@ -117,4 +147,40 @@ void loop() {
   // 4. Holding Registers: You can read the value OpenPLC writes here.
   // OpenPLC writes to this register via %QW104.
   uint16_t value_from_master = slave.Hreg(0);
+
+  // First, always check if audio is currently playing and service it.
+  if (wav != NULL && wav->isRunning()) {
+    if (!wav->loop()) {
+      wav->stop();
+      delete wav;
+      wav = NULL;
+      Serial.println("Audio Finished.");
+    }
+  } else {
+    // If no audio is playing, we can check for new triggers.
+    int lightValue = analogRead(lightSensorPin);
+    int soundValue = analogRead(soundSensorPin);
+
+    // Uncomment the line below to help calibrate your thresholds
+    Serial.printf("Light: %d, Sound: %d\n", lightValue, soundValue);
+
+    // Check for light trigger (giving it priority)
+    if (lightValue < lightThreshold && !hasLightAlertPlayed) {
+      hasLightAlertPlayed = true;
+      playAudioFile("/light.wav");
+    } 
+    // If no light trigger, check for sound trigger
+    else if (soundValue > soundThreshold && !hasSoundAlertPlayed) {
+      hasSoundAlertPlayed = true;
+      playAudioFile("/sound.wav");
+    }
+
+    // Reset flags when conditions return to normal
+    if (lightValue < lightThreshold) {
+      hasLightAlertPlayed = false;
+    }
+    if (soundValue < soundThreshold) {
+      hasSoundAlertPlayed = false;
+    }
+  }
 }
