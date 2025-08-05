@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <project xmlns="http://www.plcopen.org/xml/tc6_0201" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:ns1="http://www.plcopen.org/xml/tc6_0201">
   <fileHeader companyName="Unknown" productName="Unnamed" productVersion="1" creationDateTime="2025-06-19T11:35:34"/>
-  <contentHeader name="Unnamed" modificationDateTime="2025-08-03T22:40:14">
+  <contentHeader name="Unnamed" modificationDateTime="2025-08-04T21:37:19">
     <coordinateInfo>
       <fbd>
         <scaling x="10" y="10"/>
@@ -40,9 +40,9 @@
                 <BOOL/>
               </type>
             </variable>
-            <variable name="PB1" address="%IX100.0">
+            <variable name="PB1" address="%IW100">
               <type>
-                <BOOL/>
+                <WORD/>
               </type>
             </variable>
             <variable name="LED1" address="%QX100.0">
@@ -442,20 +442,60 @@
               </connectionPointOut>
               <variable>PB1</variable>
             </contact>
-            <coil localId="10" negated="false" width="20" height="20">
+            <coil localId="10" negated="false" width="21" height="20">
               <position x="570" y="110"/>
               <connectionPointIn>
                 <relPosition x="0" y="10"/>
-                <connection refLocalId="9">
+                <connection refLocalId="11" formalParameter="OUT">
                   <position x="570" y="120"/>
-                  <position x="221" y="120"/>
+                  <position x="380" y="120"/>
                 </connection>
               </connectionPointIn>
               <connectionPointOut>
-                <relPosition x="20" y="10"/>
+                <relPosition x="21" y="10"/>
               </connectionPointOut>
               <variable>LED1</variable>
             </coil>
+            <block localId="11" typeName="GT" width="70" height="60">
+              <position x="310" y="90"/>
+              <inputVariables>
+                <variable formalParameter="IN1">
+                  <connectionPointIn>
+                    <relPosition x="0" y="30"/>
+                    <connection refLocalId="9">
+                      <position x="310" y="120"/>
+                      <position x="221" y="120"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+                <variable formalParameter="IN2">
+                  <connectionPointIn>
+                    <relPosition x="0" y="50"/>
+                    <connection refLocalId="13">
+                      <position x="310" y="140"/>
+                      <position x="290" y="140"/>
+                      <position x="290" y="160"/>
+                      <position x="270" y="160"/>
+                    </connection>
+                  </connectionPointIn>
+                </variable>
+              </inputVariables>
+              <inOutVariables/>
+              <outputVariables>
+                <variable formalParameter="OUT">
+                  <connectionPointOut>
+                    <relPosition x="70" y="30"/>
+                  </connectionPointOut>
+                </variable>
+              </outputVariables>
+            </block>
+            <inVariable localId="13" width="40" height="30" negated="false">
+              <position x="230" y="140"/>
+              <connectionPointOut>
+                <relPosition x="40" y="20"/>
+              </connectionPointOut>
+              <expression>280</expression>
+            </inVariable>
           </LD>
         </body>
       </pou>

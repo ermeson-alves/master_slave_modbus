@@ -1,49 +1,61 @@
 #include <ModbusRTU.h>
 #include <HardwareSerial.h>
+#include <Wire.h>
+#include <math.h>
 
-// --- FIX FOR LED_BUILTIN ---
-// Define the LED pin if it's not already, usually GPIO 2 for ESP32
-#ifndef LED_BUILTIN
+// === CONFIGURAÇÕES DO HARDWARE ===
+#define PIR 19
+#define LED 4
 #define LED_BUILTIN 2
-#endif
+#define PIN_SENSOR_NTC 34
 
-// --- SETTINGS FROM YOUR CONFIGURATION ---
+// === CONFIGURAÇÕES DO MODBUS ===
 #define SLAVE_ID 1
 #define BAUD_RATE 9600
-
-// Using Serial2 (RX=16, TX=17) for an adapter with automatic direction control
-HardwareSerial& modbusSerial = Serial2; 
-
+HardwareSerial& modbusSerial = Serial2;
 ModbusRTU slave;
 
-// Define the number of registers for each type
+// === REGISTRADORES MODBUS ===
+#define COIL_PIR 0
+#define COIL_LED 1
+#define IREG_SENSOR 0
+
 #define COIL_COUNT 10
-#define ISTS_COUNT 9  // Discrete Inputs are called "Input Status" (Ists) in the library
+#define ISTS_COUNT 9
 #define IREG_COUNT 4
 #define HREG_COUNT 2
+
+// === SENSOR NTC CONFIG ===
+const float seriesResistor = 5000.0;
+const float nominalResistance = 5000.0;
+const float nominalTemperature = 25.0;
+const float bCoefficient = 3950.0;
+const int adcMax = 4095;
+const float vRef = 3.3;
+
+// === VARIÁVEIS ===
+unsigned long lastUpdate = 0;
+bool state_pir = false;
+bool estadoLED = false;
+
+float lerTemperatura();
+void gerenciarPIR(bool ligado);
 
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  Serial.println("ESP32 Modbus Slave - All Registers Enabled");
+  Serial.println("ESP32 Modbus Slave - com NTC e PIR");
 
-  // For ESP32, define the built-in LED pin
+  pinMode(PIR, INPUT);
+  pinMode(LED, OUTPUT);
+  pinMode(PIN_SENSOR_NTC, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // Start the Modbus serial port
+  // Inicializa Modbus
   modbusSerial.begin(BAUD_RATE, SERIAL_8E1);
-  Serial.println("1. Modbus serial port started at 19200 baud.");
-
-  // Configure the Modbus slave
+  slave.begin(&modbusSerial);
   slave.slave(SLAVE_ID);
-  Serial.println("2. Slave ID set to 3.");
-
-  if (slave.begin(&modbusSerial)) {
-    Serial.println("3. Modbus slave.begin() was successful.");
-  } else {
-    Serial.println("3. FATAL: Modbus slave.begin() FAILED.");
-  }
 
   // --- CREATE ALL REGISTER TYPES ---
   // Add 10 Coils (%QX100.0 to %QX101.1)
@@ -73,28 +85,64 @@ void setup() {
 }
 
 void loop() {
-  // Let the slave listen for master requests
-  slave.task();
+  slave.task(); // Necessário para manter o Modbus funcionando
 
-  // --- EXAMPLE LOGIC ---
+  if (millis() - lastUpdate > 500) {
+    lastUpdate = millis();
 
-  // 1. Coils: Make the ESP32's built-in LED follow the state of Coil 0.
-  // You can control this by forcing a value to %QX100.0 in OpenPLC.
-  bool coil0_status = slave.Coil(0);
-  digitalWrite(LED_BUILTIN, coil0_status);
+    float temperatura = lerTemperatura();
+    uint16_t temperaturaX10 = (uint16_t)(temperatura * 10); // Ex: 25.3°C → 253
 
-  // 2. Discrete Inputs: Set the status of Discrete Input 0.
-  // You can monitor this in OpenPLC at %IX100.0.
-  // Here we just make it toggle every 2 seconds.
-  bool discrete0_status = (millis() / 2000) % 2;
-  slave.Ists(0, discrete0_status);
+    slave.Ireg(IREG_SENSOR, temperaturaX10);
+    Serial.print("Temperatura enviada: ");
+    Serial.print(temperatura);
+    Serial.println(" °C");
+  }
 
-  // 3. Input Registers: Write a simulated sensor value.
-  // Monitor this in OpenPLC at %IW108.
-  uint16_t sensor_value = 1000 + 500 * sin(millis() / 1000.0);
-  slave.Ireg(0, sensor_value);
+  // Lê comando do mestre (HIGH/LOW) para ativar PIR
+  bool comandoMestre = slave.Coil(COIL_PIR);
+  if (comandoMestre != state_pir) {
+    state_pir = comandoMestre;
+  }
 
-  // 4. Holding Registers: You can read the value OpenPLC writes here.
-  // OpenPLC writes to this register via %QW104.
-  uint16_t value_from_master = slave.Hreg(0);
+  // gerenciarPIR(state_pir);
+  estadoLED = slave.Coil(COIL_LED);
+  digitalWrite(LED, estadoLED);
+}
+
+// === LÊ E CALCULA A TEMPERATURA COM NTC ===
+float lerTemperatura() {
+  int adcValue = analogRead(PIN_SENSOR_NTC);
+  float voltage = adcValue * vRef / adcMax;
+
+  float resistance = (vRef - voltage) * seriesResistor / voltage;
+  float steinhart;
+  steinhart = resistance / nominalResistance;
+  steinhart = log(steinhart);
+  steinhart /= bCoefficient;
+  steinhart += 1.0 / (nominalTemperature + 273.15);
+  steinhart = 1.0 / steinhart;
+  steinhart -= 273.15;
+
+  return steinhart;
+}
+
+// === LÓGICA DE DETECÇÃO COM SENSOR PIR ===
+void gerenciarPIR(bool ligado) {
+  if (ligado) {
+    digitalWrite(LED, HIGH);
+
+    // int movimento = digitalRead(PIR);
+    // if (movimento == HIGH) {
+    //   estadoLED = !estadoLED; // Alterna estado do LED
+    //   Serial.println("Movimento detectado: alternando LED.");
+    //   delay(200); // Evita múltiplas leituras em sequência
+    // }
+  } else {
+    // estadoLED = false; // Força LED a desligar
+    digitalWrite(LED, LOW);
+
+  }
+
+  // digitalWrite(LED, estadoLED ? HIGH : LOW);
 }

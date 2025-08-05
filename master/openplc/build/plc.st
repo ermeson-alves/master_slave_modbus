@@ -27,13 +27,17 @@ PROGRAM RS485_Master
     LED3 : BOOL;
     PB2 : BOOL;
     LED2 : BOOL;
-    PB1 : BOOL;
+    PB1 : WORD;
     LED1 : BOOL;
+  END_VAR
+  VAR
+    _TMP_GT11_OUT : BOOL;
   END_VAR
 
   LED3 := PB3;
   LED2 := PB2;
-  LED1 := PB1;
+  _TMP_GT11_OUT := GT(PB1, 240);
+  LED1 := _TMP_GT11_OUT;
 END_PROGRAM
 
 

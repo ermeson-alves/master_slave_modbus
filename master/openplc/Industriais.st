@@ -4,13 +4,17 @@ PROGRAM RS485_Master
     LED3 AT %QX102.4 : BOOL;
     PB2 AT %IX101.1 : BOOL;
     LED2 AT %QX101.2 : BOOL;
-    PB1 AT %IX100.0 : BOOL;
-    LED1 AT %QX100.0 : BOOL;
+    PB1 AT %IW100 : WORD;
+    LED1 AT %QX100.1 : BOOL;
+  END_VAR
+  VAR
+    _TMP_GT11_OUT : BOOL;
   END_VAR
 
   LED3 := PB3;
   LED2 := PB2;
-  LED1 := PB1;
+  _TMP_GT11_OUT := GT(PB1, 240);
+  LED1 := _TMP_GT11_OUT;
 END_PROGRAM
 
 
@@ -22,7 +26,7 @@ CONFIGURATION Config0
   END_RESOURCE
 END_CONFIGURATION
 
-(*DBG:char md5[] = "7f43d4e5261dd3797aa2163c3a624ac7";*)
+(*DBG:char md5[] = "fc6957ae94dccadb501669fb7398acef";*)
 (*DBG:/**)
 (*DBG: * This file is part of OpenPLC Runtime*)
 (*DBG: **)
@@ -65,11 +69,12 @@ END_CONFIGURATION
 (*DBG:    {&(RES0__INSTANCE0.LED3), BOOL_ENUM},*)
 (*DBG:    {&(RES0__INSTANCE0.PB2), BOOL_ENUM},*)
 (*DBG:    {&(RES0__INSTANCE0.LED2), BOOL_ENUM},*)
-(*DBG:    {&(RES0__INSTANCE0.PB1), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0.PB1), WORD_ENUM},*)
 (*DBG:    {&(RES0__INSTANCE0.LED1), BOOL_ENUM},*)
+(*DBG:    {&(RES0__INSTANCE0._TMP_GT11_OUT), BOOL_ENUM},*)
 (*DBG:};*)
 (*DBG:*)
-(*DBG:#define VAR_COUNT               6*)
+(*DBG:#define VAR_COUNT               7*)
 (*DBG:*)
 (*DBG:uint16_t get_var_count(void)*)
 (*DBG:{*)
@@ -85,6 +90,8 @@ END_CONFIGURATION
 (*DBG:    switch (debug_vars[idx].type) {*)
 (*DBG:    case BOOL_ENUM:*)
 (*DBG:        return sizeof(BOOL);*)
+(*DBG:    case WORD_ENUM:*)
+(*DBG:        return sizeof(WORD);*)
 (*DBG:    default:*)
 (*DBG:        return 0;*)
 (*DBG:    }*)
@@ -97,6 +104,8 @@ END_CONFIGURATION
 (*DBG:    switch (debug_vars[idx].type) {*)
 (*DBG:    case BOOL_ENUM:*)
 (*DBG:        return (void *)&((__IEC_BOOL_t *) ptr)->value;*)
+(*DBG:    case WORD_ENUM:*)
+(*DBG:        return (void *)&((__IEC_WORD_t *) ptr)->value;*)
 (*DBG:    default:*)
 (*DBG:        return 0;*)
 (*DBG:    }*)
@@ -115,6 +124,12 @@ END_CONFIGURATION
 (*DBG:            ((__IEC_BOOL_t *) ptr)->flags |= __IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        }*)
+(*DBG:        case WORD_ENUM: {*)
+(*DBG:            memcpy(&((__IEC_WORD_t *) ptr)->value, val, var_size);*)
+(*DBG:            //((__IEC_WORD_t *) ptr)->value = *((WORD *) val);*)
+(*DBG:            ((__IEC_WORD_t *) ptr)->flags |= __IEC_FORCE_FLAG;*)
+(*DBG:            break;*)
+(*DBG:        }*)
 (*DBG:        default:*)
 (*DBG:            break;*)
 (*DBG:        }*)
@@ -122,6 +137,9 @@ END_CONFIGURATION
 (*DBG:        switch (debug_vars[idx].type) {*)
 (*DBG:        case BOOL_ENUM:*)
 (*DBG:            ((__IEC_BOOL_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
+(*DBG:            break;*)
+(*DBG:        case WORD_ENUM:*)
+(*DBG:            ((__IEC_WORD_t *) ptr)->flags &= ~__IEC_FORCE_FLAG;*)
 (*DBG:            break;*)
 (*DBG:        default:*)
 (*DBG:            break;*)

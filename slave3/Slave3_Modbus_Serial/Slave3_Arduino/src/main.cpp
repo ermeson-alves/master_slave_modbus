@@ -1,5 +1,11 @@
 #include <ModbusRTU.h>
 #include <HardwareSerial.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <AudioFileSourceSPIFFS.h>
+#include <AudioGeneratorWAV.h>
+#include <AudioOutputI2S.h>
+
 
 // --- FIX FOR LED_BUILTIN ---
 // Define the LED pin if it's not already, usually GPIO 2 for ESP32
@@ -21,6 +27,19 @@ ModbusRTU slave;
 #define ISTS_COUNT 9  // Discrete Inputs are called "Input Status" (Ists) in the library
 #define IREG_COUNT 4
 #define HREG_COUNT 2
+
+const int lightSensorPin = 35;
+const int soundSensorPin = 34;
+const int audioThreshold = 3000;
+const int mutePin = 18;
+
+// ============== Global Audio Objects ==============
+AudioGeneratorWAV *wav;
+AudioFileSourceSPIFFS *file;
+AudioOutputI2S *out;
+
+// ============== State Machine Flag ==============
+bool hasPlayed = false;
 
 void setup() {
   Serial.begin(115200);
@@ -79,8 +98,8 @@ void loop() {
 
   // 1. Coils: Make the ESP32's built-in LED follow the state of Coil 0.
   // You can control this by forcing a value to %QX100.0 in OpenPLC.
-  bool coil0_status = slave.Coil(0);
-  digitalWrite(LED_BUILTIN, coil0_status);
+  bool LED1Estado = slave.Coil(0);
+  digitalWrite(LED_BUILTIN, LED1Estado);
 
   // 2. Discrete Inputs: Set the status of Discrete Input 0.
   // You can monitor this in OpenPLC at %IX100.0.
@@ -90,8 +109,10 @@ void loop() {
 
   // 3. Input Registers: Write a simulated sensor value.
   // Monitor this in OpenPLC at %IW108.
-  uint16_t sensor_value = 1000 + 500 * sin(millis() / 1000.0);
-  slave.Ireg(0, sensor_value);
+  uint16_t luminosity = analogRead(lightSensorPin);
+  slave.Ireg(0, luminosity);
+  uint16_t soundIntensity = analogRead(soundIntensity);
+  slave.Ireg(1, soundIntensity);
 
   // 4. Holding Registers: You can read the value OpenPLC writes here.
   // OpenPLC writes to this register via %QW104.
